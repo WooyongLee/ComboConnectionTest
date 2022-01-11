@@ -12,7 +12,9 @@ namespace ComboConnectionTest
 {
     public static class CommonFunctions
     {
-        public static int _READ_TIMEOUT = 1000 * 15; //  15 sec
+        public static readonly int READ_TIMEOUT = 1000 * 15; //  15 sec
+
+        public static readonly string BLANK = " ";
     }
 
     public class JsonManager
@@ -38,7 +40,7 @@ namespace ComboConnectionTest
         // 테이블에서 키에 일치하는 파라미터 데이터를 반환하는 함수
         public static ParamSetJson GetParamSet(string key, Hashtable hashtable)
         {
-            if ( hashtable.ContainsKey(key).Equals(true) )
+            if (hashtable.ContainsKey(key).Equals(true))
             {
                 ParamSetJson set = hashtable[key] as ParamSetJson;
                 return set;
@@ -60,7 +62,17 @@ namespace ComboConnectionTest
         }
 
         // VBW Enum 값
+        public static VBW_MAP GetVBWValue(ParamSetJson vbwSet)
+        {
+            VBW_MAP vbwMap = VBW_MAP.KHz_1000;
+            try
+            {
+                vbwMap = (VBW_MAP)Enum.Parse(typeof(VBW_MAP), vbwSet.Unit + "_" + vbwSet.Value);
+            }
+            catch { }
 
+            return vbwMap;
+        }
 
 
         // Json 파라미터 세트를 해당 item을 통해 Json 텍스트에서 찾아서 반환함
@@ -69,7 +81,7 @@ namespace ComboConnectionTest
             List<ParamSetJson> valueSet = null;
             JsonElement result = GetTreeNodeParams(item);
             string resultParams = result.GetProperty("Params").ToString();
-            if ( resultParams != "null")
+            if (resultParams != "null")
             {
                 valueSet = JsonConvert.DeserializeObject<List<ParamSetJson>>(resultParams);
             }
@@ -88,19 +100,19 @@ namespace ComboConnectionTest
 
                 var nodeNameArray = nodeNameElement.EnumerateArray();
 
-                foreach ( var fieldName in nodeNameArray)
+                foreach (var fieldName in nodeNameArray)
                 {
-                    if ( matchJsonItems(fieldName, node))
+                    if (matchJsonItems(fieldName, node))
                     {
                         return fieldName.Clone();
                     }
 
                     // sub KeyWord가 나오는 경우에 Sub의 하위 그룹을 처리하는 부분
-                    if ( fieldName.TryGetProperty("Sub", out JsonElement Sub))
+                    if (fieldName.TryGetProperty("Sub", out JsonElement Sub))
                     {
-                        foreach ( var subfieldName in Sub.EnumerateArray())
+                        foreach (var subfieldName in Sub.EnumerateArray())
                         {
-                            if ( matchJsonItems(subfieldName, node))
+                            if (matchJsonItems(subfieldName, node))
                             {
                                 return subfieldName.Clone();
                             }
@@ -117,9 +129,9 @@ namespace ComboConnectionTest
             bool bFind = false;
 
             // NodeName 일치 여부 확인
-            if ( fieldName.TryGetProperty("NodeName", out JsonElement NodeName))
+            if (fieldName.TryGetProperty("NodeName", out JsonElement NodeName))
             {
-                if ( node == NodeName.ToString())
+                if (node == NodeName.ToString())
                 {
                     bFind = true;
                 }

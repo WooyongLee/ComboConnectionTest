@@ -17,6 +17,7 @@
             <StackPanel Orientation="Horizontal">
                 <Button x:Name="ConButton" Content="Connect" Margin="5" Click="ConButton_Click" ></Button>
                 <Button x:Name="SendButton" Content="Send" Margin="5" Click="SendButton_Click"></Button>
+                <Button x:Name="EraseButton" Content="로그 지우기" Margin="5" Click="EraseButton_Click"></Button>
             </StackPanel>
                 
             <!-- 장치 내에서 발생하는 이벤트 로그를 보여주는 부분 -->

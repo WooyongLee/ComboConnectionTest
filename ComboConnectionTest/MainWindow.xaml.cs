@@ -86,8 +86,22 @@ namespace ComboConnectionTest
                 }
             }
 
-            MqttMsgSender MsgSender = new MqttMsgSender();
-            await MsgSender.SendMessage(hashtable);
+            Queue sendQueue = MqttMsgMaker.SendMessage(hashtable);
+            if ( sendQueue != null)
+            {
+                await Connector.SendExecGlobalOffsetMessageToPACT(sendQueue);
+            }
+        }
+
+
+        // 텍스트 로그 삭제 버튼 클릭 이벤트 함수
+        private void EraseButton_Click(object sender, RoutedEventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                LogTextBox.Text = "";
+                LogMsg = "";
+            }));
         }
     }
 }

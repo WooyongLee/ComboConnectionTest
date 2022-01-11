@@ -37,7 +37,7 @@ namespace ComboConnectionTest
         }
 
         // 메시지 빌더를 통해 MQTT 메시지를 구성한다.
-        public void BuildMessage(string topic, byte[] payload)
+        public byte[] BuildMessage(string topic, byte[] payload)
         {
             _message = new MqttApplicationMessageBuilder()
                 .WithTopic(topic)
@@ -45,6 +45,8 @@ namespace ComboConnectionTest
                 .WithExactlyOnceQoS()
                 .WithRetainFlag()
                 .Build();
+
+            return _message.Payload;
         }
 
         int tryCount = 0;

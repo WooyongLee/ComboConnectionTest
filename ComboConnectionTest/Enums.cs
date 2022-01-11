@@ -46,4 +46,11 @@ namespace ComboConnectionTest
 		KHz_1000,
 		KHz_3000
 	}
+
+	public enum LNA_SET
+	{
+		LNA_OFF = 0,
+		LNA_ON = 1,
+		LNA_ON_OFF = 2
+	}
 }
