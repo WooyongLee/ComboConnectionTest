@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Collections;
 
 namespace ComboConnectionTest
 {
@@ -58,6 +55,19 @@ namespace ComboConnectionTest
             send5GmsgMqttQueue.Enqueue(_fixedValuesPadding);
 
             return send5GmsgMqttQueue;
+        }
+
+        public static Queue SendMessage(string strText)
+        {
+            Queue mqttQueue = new Queue();
+
+            string[] strSplited = strText.Split(' ');
+            foreach (var str in strSplited)
+            {
+                mqttQueue.Enqueue(str);
+            }
+
+            return mqttQueue;
         }
     }
 }

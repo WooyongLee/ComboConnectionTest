@@ -23,7 +23,9 @@ namespace ComboConnectionTest
         {
             _factory = new MqttFactory();
             MqttClient = _factory.CreateMqttClient(); 
-            _cancellationToken = new CancellationToken();   
+            _cancellationToken = new CancellationToken();
+
+            // MqttClient.DisconnectedHandler
 
         }
 
@@ -93,8 +95,11 @@ namespace ComboConnectionTest
 
         public async void SendMessage()
         {
-            // Send ~~ Publish
-            await MqttClient.PublishAsync(_message, _cancellationToken);
+            if (MqttClient.IsConnected)
+            {
+                // Send ~~ Publish
+                await MqttClient.PublishAsync(_message, _cancellationToken);
+            }
         }
 
 
