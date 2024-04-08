@@ -158,7 +158,7 @@ namespace ComboConnectionTest
 
            //  WriteLogEvent(e.ApplicationMessage.Payload.ToString());
 
-            if (e.ApplicationMessage.Payload.Length < 999)
+            if (e.ApplicationMessage.Payload.Length < 1999)
             {
                 if (_mqttReceiveBinTopic.Contains("SCAN"))
                 {
@@ -168,30 +168,14 @@ namespace ComboConnectionTest
                     var strScannerLog = "scanMode = " + scanMode + ", scanType = " + scanType + ", numOfCell = " + numOfCell;
                     // WriteLogEvent(strScannerLog);
                 }
+
+                WriteLogEvent("Recv 5gnr Binary");
+
                 return;
             }
 
             var mode = BitConverter.ToInt32(receivedSpectrum, 0 * FourByte);
             var type = BitConverter.ToInt32(receivedSpectrum, 1 * FourByte);
-
-            if (_mqttReceiveBinTopic.Contains("SCAN"))
-            {
-                int tsScanner = BitConverter.ToInt32(receivedSpectrum, 2);
-                WriteLogEvent("ts = " + tsScanner.ToString());
-                for ( int i = 0; i < 2048; i ++)
-                {
-                    var spectrumData = BitConverter.ToInt32(receivedSpectrum, 2 + 4 + 4 * i);
-                    recvSpectrumList.Add(spectrumData);
-                 
-                    if ( i % 100 == 0)
-                    {
-                        var strScannerLog = string.Format("Binary Subscriber Receive data = {0} ", spectrumData);
-                        WriteLogEvent(strScannerLog);
-                    }
-                }
-
-                return;
-            }
 
             for ( int i = 0; i < MAX_SPECTRUM_NUM; i++ )
             {
@@ -255,6 +239,12 @@ namespace ComboConnectionTest
 
             // Ignore Message
             if ( recvMsgPayload.Contains("0x06 0x01") || recvMsgPayload.Contains("0x51 0") || recvMsgPayload.Contains("0x25 0") || recvMsgPayload.Contains("0x30"))
+            {
+                return;
+            }
+
+            // Ignore Auto Atten Message
+            if (recvMsgPayload.Contains("0x26") || recvMsgPayload.Contains("0x24"))
             {
                 return;
             }

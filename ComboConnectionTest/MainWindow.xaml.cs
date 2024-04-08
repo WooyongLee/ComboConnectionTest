@@ -1,5 +1,6 @@
 ﻿using LiveCharts.Wpf;
 using MQTTnet;
+using MQTTnet.Client;
 using System;
 using System.Collections;
 using System.Collections.Generic;
