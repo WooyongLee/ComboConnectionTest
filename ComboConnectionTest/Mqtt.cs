@@ -1,5 +1,6 @@
 ﻿using MQTTnet;
 using MQTTnet.Client;
+using MQTTnet.Internal;
 using MQTTnet.Packets;
 using System;
 using System.Collections.Generic;
@@ -54,6 +55,8 @@ namespace ComboConnectionTest
         int tryCount = 0;
         public async void Connect(string topic)
         {
+            #region old
+            // tryCount = 0;
             //MqttClient.UseDisconnectedHandler(async e =>
             //{
             //    messageHandler("Disconnected MQTT Broker " + topic);
@@ -79,24 +82,42 @@ namespace ComboConnectionTest
             //    messageHandler("Connected MQTT Broker " + topic);
             //    await MqttClient.SubscribeAsync(new TopicFilterBuilder().WithTopic(topic).Build());
             //});
+            #endregion
 
-            tryCount = 0;
+            MqttClient.ConnectedAsync += async e =>
+            {
+                await MqttClient.SubscribeAsync(new MqttTopicFilterBuilder()
+                    .WithExactlyOnceQoS()
+                    .WithTopic(topic).Build());
+
+                // or
+                //await MqttClient.SubscribeAsync(
+                //    new MqttClientSubscribeOptions
+                //    {
+                //        TopicFilters = new List<MqttTopicFilter> { new MqttTopicFilter { Topic = topic } }
+                //    },
+                //    CancellationToken.None);
+
+                messageHandler("Connected MQTT Broker " + topic);
+            };
+
+            MqttClient.DisconnectedAsync += e =>
+            {
+                var ex = e.Exception;
+                messageHandler("Disconnected MQTT Broker " + topic);
+
+                return CompletedTask.Instance;
+            };
 
             try
             {
                 await MqttClient.ConnectAsync(_options, _cancellationToken).ConfigureAwait(false);
-                await MqttClient.SubscribeAsync(
-                    new MqttClientSubscribeOptions
-                    {
-                        TopicFilters = new List<MqttTopicFilter> { new MqttTopicFilter { Topic = topic } }
-                    },
-                    CancellationToken.None);
 
             }
             catch (Exception ex)
             {
                 Console.Write(ex.ToString());
-                // To Do :: Write Some Message at Console
+                messageHandler("Connect Exception " + ex.ToString());
             }
         }
 

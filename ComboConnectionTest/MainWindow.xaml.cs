@@ -9,6 +9,8 @@ using System.Management;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using static ComboConnectionTest.TextFileManager;
@@ -44,6 +46,8 @@ namespace ComboConnectionTest
             ulong result =  (ulong)Math.Round(freqMHz * (double)THOUSAND * (double)THOUSAND);
             Console.WriteLine("result = " + result);
 
+            // Read File
+            ReadTeratermFiletoSearchAnalyze();
 
 
             ChartViewWin = new ChartViewerWindow();
@@ -56,6 +60,43 @@ namespace ComboConnectionTest
             // SearchIP();
 
             // Do();
+        }
+
+        public void ReadTeratermFiletoSearchAnalyze()
+        {
+            // Input file path
+            string inputFilePath = "teraterm1.txt";
+
+            // Output file path
+            string outputFilePath = "output.txt";
+
+            try
+            {
+                // Open the input file for reading
+                using (StreamReader reader = new StreamReader(inputFilePath))
+                {
+                    // Open or create the output file for writing
+                    using (StreamWriter writer = new StreamWriter(outputFilePath))
+                    {
+                        string line;
+                        // Read each line from the input file
+                        while ((line = reader.ReadLine()) != null)
+                        {
+                            // Check if the line contains "Analyze Start" or "Analyze Stop"
+                            if (line.Contains("Analyze Start") || line.Contains("Analyze Stop"))
+                            {
+                                // Write the line to the output file
+                                writer.WriteLine(line);
+                            }
+                        }
+                    }
+                }
+                Console.WriteLine("Filtered lines saved to output file successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred: " + ex.Message);
+            }
         }
 
         public void Do()
@@ -169,12 +210,12 @@ namespace ComboConnectionTest
 
                 writer.Write(cnt++);
                 writer.Write(",");
-                // spectrumDataList의 각 요소를 CSV 파일에 쓰기합니다.
-                foreach (float data in spectrumDataList)
-                {
-                    writer.Write(data.ToString());
-                    writer.Write(",");
-                }
+                //// spectrumDataList의 각 요소를 CSV 파일에 쓰기합니다.
+                //foreach (float data in spectrumDataList)
+                //{
+                //    writer.Write(data.ToString());
+                //    writer.Write(",");
+                //}
 
                 // 한 줄의 데이터를 모두 썼으면 줄바꿈 문자를 추가합니다.
                 writer.WriteLine();
@@ -189,6 +230,7 @@ namespace ComboConnectionTest
             Connector.WriteLogEvent += Connetor_WriteLogEvent;
             Connector.ConnectDoneEvent += Connector_ConnectDoneEvent;
             Connector.ReceiveSpectrumDataEvent += Connector_ReceiveSpectrumDataEvent;
+            Connector.ReceiveMessageEvent += Connector_ReceiveMessageEvent;
 
             await Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -200,6 +242,7 @@ namespace ComboConnectionTest
 
             await Connector.InitMqttClient(selectedTopicItem);
         }
+
 
         private void Connector_ReceiveSpectrumDataEvent(object obj, EventArgs e)
         {
@@ -341,6 +384,69 @@ namespace ComboConnectionTest
             this.Dispose();
 
             Application.Current.Shutdown();
+        }
+
+        private void ConButton_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            Console.WriteLine("MouseOver");
+        }
+
+        private void ConButton_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            Console.WriteLine("MouseLeave");
+        }
+
+        private async void SaRebootTestButton_Click(object sender, RoutedEventArgs e)
+        {
+            // SA Reboot Test
+            Queue sendQueue = new Queue();
+            sendQueue.Enqueue("0x65 1");
+            await Connector.SendNormalCmd(sendQueue);
+        }
+
+        private async void Connector_ReceiveMessageEvent(object obj, EventArgs e)
+        {
+            string strMessage = obj as string;
+            Queue sendQueue = new Queue();
+
+            if ((bool)RebootTestCheckbox.IsChecked)
+            {
+                // receive reboot response
+                if (strMessage.Contains(MqttConnector.RebootCheckMessage))
+                {
+                    // clear chart
+                    var spectrumData = new List<float>();
+                    ChartViewWin.SetChartData(spectrumData);
+
+                    // if sa mode
+                    if (strMessage.Contains("1"))
+                    {
+                        // send clk source 
+                        sendQueue.Enqueue("0x50");
+                        await Connector.SendNormalCmd(sendQueue);
+
+                        sendQueue.Clear();
+
+                        // send parameter
+                        sendQueue.Enqueue("0x04 0x00 3650010000 150000000 10 10 0 10 0 10 0" +
+                            " 0 0 0 2 0 0 2 0 0 2 0 1 5000 0 0 10000 1 0 10000 0 800 0 1 100 0 0 0");
+                        await Connector.SendNormalCmd(sendQueue);
+                    }
+
+                }
+
+                if (strMessage.Contains(MqttConnector.ParameterRecvCheckMessage))
+                {
+                    await Dispatcher.BeginInvoke(new Action(async () =>
+                    {
+                        Thread.Sleep(1000);
+                
+                        // response spectrum
+                        sendQueue.Enqueue("0x11");
+                        await Connector.SendNormalCmd(sendQueue);
+                    }));
+                }
+            } // end if ((bool)RebootTestCheckbox.IsChecked)
         }
     }
 }

@@ -22,6 +22,10 @@ namespace ComboConnectionTest
         public delegate void ReceiveSpectrumData(object obj, EventArgs e);
         public event ReceiveSpectrumData ReceiveSpectrumDataEvent;
 
+        // String Message 수신에 따른 이벤트
+        public delegate void ReceiveMessage(object obj, EventArgs e);
+        public event ReceiveMessage ReceiveMessageEvent;
+
         // MainWIndow에 작성할 로그 처리용
         public event WriteLog WriteLogEvent;
 
@@ -45,10 +49,12 @@ namespace ComboConnectionTest
                                                                   // 응답 또는 status를 보내줄 때
 
         private string _mqttReceiveBinTopic = "SCAN/DAT"; // 0x11(or 0x23)” 명령어가 pact/command로
-        // private readonly string _mqttReceiveBinTopic = "pact/data2"; // 0x11(or 0x23)” 명령어가 pact/command로
-                                                                  // 보내졌을 때 그래프에 출력될 데이터를
-                                                                  // 바이너리형태로 보내줌.
+                                                          // private readonly string _mqttReceiveBinTopic = "pact/data2"; // 0x11(or 0x23)” 명령어가 pact/command로
+                                                          // 보내졌을 때 그래프에 출력될 데이터를
+                                                          // 바이너리형태로 보내줌.
 
+        public static string RebootCheckMessage = "0x66";
+        public static string ParameterRecvCheckMessage = "0x99";
 
         private readonly int _waitPACTTime = 50; // 50 ms PACT 메시지 전송 후, wait time
 
@@ -218,8 +224,13 @@ namespace ComboConnectionTest
 
             // 임시 로그 출력
             // strLog = string.Format("Binary Subscriber Receive Max = {0} ... , timestamp : {1}", doubledMaxSpectrum.ToString(), timestamp);
-            strLog = string.Format("Binary Subscriber Receive Max = {0} ", doubledMaxSpectrum.ToString());
-            WriteLogEvent(strLog);
+            // strLog = string.Format("Binary Subscriber Receive Max = {0} ", doubledMaxSpectrum.ToString());
+            strLog = string.Format("Binary Subscriber Receive : {0} {1} {2} {3} {4}", _spectrumData[0] / 100.0, _spectrumData[199] / 100.0, _spectrumData[399] / 100.0, _spectrumData[599] / 100.0, _spectrumData[799] / 100.0);
+            
+            if (cnt++ % 50 == 0)
+            {
+                WriteLogEvent(strLog);
+            }
             bReceivedBin = true;
         }
 
@@ -257,12 +268,20 @@ namespace ComboConnectionTest
                 return;
             }
 
-            else
-            {
-                strLog = string.Format("Subscriber Receive Message : {0}", Encoding.UTF8.GetString(e.ApplicationMessage.Payload));
-            }
-            
+            strLog = string.Format("Subscriber Receive Message : {0}", Encoding.UTF8.GetString(e.ApplicationMessage.Payload));
             WriteLogEvent(strLog);
+
+            // Test SA Reboot
+            if (recvMsgPayload.Contains(RebootCheckMessage))
+            {
+                cnt = 0;
+            }
+
+            if (ReceiveMessageEvent != null)
+            {
+                ReceiveMessageEvent(recvMsgPayload, e);
+            }
+
         }
 
         private void OnPublisherReceivedMessage(MqttApplicationMessageReceivedEventArgs e)

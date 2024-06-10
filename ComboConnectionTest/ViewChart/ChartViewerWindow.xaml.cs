@@ -1,4 +1,6 @@
-﻿using System;
+﻿using LiveCharts.Defaults;
+using LiveCharts;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
@@ -101,7 +103,22 @@ namespace ComboConnectionTest
 
         public void SetChartData(List<float> list)
         {
-            this.curList = list;
+            if (list.Count == 0)
+            {
+                this.curList.Clear();
+                VM.MaxValue = -100;
+                VM.ChartValues.Clear();
+
+                // 1001개의 스펙트럼 데이터 초기화
+                for (int i = 0; i < ChartViewerVM.MAX_SPECTRUM_NUM; i++)
+                {
+                    VM.ChartValues.Add(new ObservableValue(0));
+                }
+            }
+            else
+            {
+                this.curList = list;
+            }
         }
 
         public void SetYaxisMinMax(double ViewerRefLv)

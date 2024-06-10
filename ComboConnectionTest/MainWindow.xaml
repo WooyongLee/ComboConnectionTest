@@ -10,14 +10,32 @@
         <StackPanel>
             <StackPanel Orientation="Horizontal" Margin="5">
                 <TextBlock>IP : </TextBlock>
-                <TextBox x:Name="InputIPTextBox" Width="150" Margin="3,0" Text="192.168.123.34"></TextBox>
+                <TextBox x:Name="InputIPTextBox" Width="150" Margin="3,0" Text="192.168.123.194"></TextBox>
                 <TextBlock Margin="5,0">PORT : </TextBlock>
                 <TextBox x:Name="InputPortTextBox" Width="50" Margin="3,0" Text="1883" ></TextBox>
                 <ComboBox x:Name="TopicCombobox" SelectedIndex="0" Margin="5, 0">
                     <ComboBoxItem>pact</ComboBoxItem>
                     <ComboBoxItem>SCAN</ComboBoxItem>
                 </ComboBox>
-                <Button x:Name="ConButton" Content=" Connect " Click="ConButton_Click" Margin="5, 0"></Button>
+                <Button x:Name="ConButton" Click="ConButton_Click" Margin="5, 0"
+                        MouseEnter="ConButton_MouseEnter"
+                        MouseLeave="ConButton_MouseLeave"
+                        Visibility="Visible"
+                        Background="Black"
+                        ForceCursor="True"
+                        Foreground="Red" Width="100" Height="20"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+                        Panel.ZIndex="1" BorderBrush="White" OpacityMask="#FFFDC9C9" IsDefault="True" >
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Content" Value=" Connect "></Setter>
+                            <Setter Property="Visibility" Value="Visible"></Setter>
+                            <Setter Property="Background" Value="Black"></Setter>
+                            <Setter Property="Foreground" Value="Red"></Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
@@ -52,6 +70,8 @@
                         <Button x:Name="SendFTPButton" Content=" 파일 전송 " Click="SendCmdButton_Click"></Button>
                         <Button x:Name="SendReqSpectrumButton" Content=" 스펙트럼 요청 " Click="SendCmdButton_Click"></Button>
                         <Button x:Name="SpectrumViewButton" Content=" 스펙트럼 확인 [새 창] " Margin="50, 0, 0, 0" Click="SpectrumViewButton_Click"></Button>
+                        <Button x:Name="SaRebootTestButton" Content=" SA Reboot Test " Margin="5, 0, 0, 0" Click="SaRebootTestButton_Click"></Button>
+                        <CheckBox x:Name="RebootTestCheckbox" Content="" ></CheckBox>
                     </StackPanel>
                 </StackPanel>
             </Border>
