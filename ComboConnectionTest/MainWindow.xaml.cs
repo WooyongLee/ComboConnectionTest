@@ -409,7 +409,12 @@ namespace ComboConnectionTest
             string strMessage = obj as string;
             Queue sendQueue = new Queue();
 
-            if ((bool)RebootTestCheckbox.IsChecked)
+            bool ischecked = false;
+            Dispatcher.Invoke(new Action(() => { 
+                ischecked = (bool)RebootTestCheckbox.IsChecked;
+            }));
+
+            if (ischecked)
             {
                 // receive reboot response
                 if (strMessage.Contains(MqttConnector.RebootCheckMessage))
